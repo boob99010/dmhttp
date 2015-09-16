@@ -8,6 +8,8 @@ Eclipse has a great plugin call “Eclipse runner” https://marketplace.eclipse
 
 After you installed MavenRunner, you can click window -> MavenRunner, the window will be added to your netbeans, then you can right click any project on that window and add mavel goal.
 
+!!! when you enter something in the textbox, it will filter out goals for you, remember to hit enter
+
 # Compile
 
 Step 1) cd libInUse
