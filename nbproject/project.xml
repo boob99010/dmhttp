@@ -100,6 +100,10 @@
                 <binary-origin>release/modules/ext/stax-1.2.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/xstream-1.4.8-sources.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/xstream-1.4.8-sources.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/kxml2-min-2.3.0.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/kxml2-min-2.3.0.jar</binary-origin>
             </class-path-extension>
@@ -150,6 +154,10 @@
             <class-path-extension>
                 <runtime-relative-path>ext/xom-1.1.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/xom-1.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/xstream-1.4.8-javadoc.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/xstream-1.4.8-javadoc.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
