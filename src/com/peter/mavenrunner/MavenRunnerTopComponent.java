@@ -278,8 +278,8 @@ public final class MavenRunnerTopComponent extends TopComponent {
 	}
 	MyTreeNode node = (MyTreeNode) ((MyTreeNode) path.getLastPathComponent());
 	if (node.type.equals("goal")) {
-	    String goals = JOptionPane.showInputDialog(null, "Please input maven goals", "Edit", JOptionPane.QUESTION_MESSAGE);
-	    if (goals != null) {
+	    String newGoals = JOptionPane.showInputDialog(null, "Please input maven goals", node.getUserObject());
+	    if (newGoals != null) {
 		String key = node.projectInformation.getDisplayName();
 		Vector<String> list = data.get(key);
 		if (list == null) {
@@ -288,9 +288,9 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		}
 		int index = list.indexOf(node.getUserObject());
 		list.remove(node.getUserObject());
-		list.add(index, goals);
+		list.add(index, newGoals);
 
-		node.setUserObject(goals);
+		node.setUserObject(newGoals);
 		projectTree.updateUI();
 		NbPreferences.forModule(this.getClass()).put("data", toString(data));
 	    }
