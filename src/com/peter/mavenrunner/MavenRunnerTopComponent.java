@@ -146,7 +146,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 
         add(treePanel, java.awt.BorderLayout.CENTER);
 
-        controlPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        controlPanel.setLayout(new java.awt.FlowLayout(0, 2, 2));
 
         treeExpandButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/peter/mavenrunner/treeExpand.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(treeExpandButton, org.openide.util.NbBundle.getMessage(MavenRunnerTopComponent.class, "MavenRunnerTopComponent.treeExpandButton.text")); // NOI18N
