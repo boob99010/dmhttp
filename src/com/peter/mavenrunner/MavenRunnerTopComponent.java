@@ -495,8 +495,8 @@ public final class MavenRunnerTopComponent extends TopComponent {
     }
 
     private void log(String str) {
-	InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
-	io.getOut().println(str);
+	//InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
+	//io.getOut().println(str);
     }
     /*
      @Override
