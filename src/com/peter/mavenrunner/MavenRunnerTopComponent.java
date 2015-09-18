@@ -10,8 +10,10 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
@@ -230,9 +232,14 @@ public final class MavenRunnerTopComponent extends TopComponent {
 						Object rc = createRunConfig.invoke(null, FileUtil.toFile(node.project.getProjectDirectory()), node.project, node.projectInformation.getDisplayName(), goals);
 
 						Class runConfig = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunConfig");
-
-						Method setProperty = runUtils.getMethod("setProperty", new Class[]{String.class, String.class});
-						setProperty.invoke(rc, "maven.tomcat.port", "8082");
+						Method[] m = runConfig.getDeclaredMethods();
+						for (int i = 0; i < m.length; i++) {
+							io.getOut().println(m[i].toString());
+						}
+						Method setProperty = runConfig.getMethod("addProperties", new Class[]{Map.class});
+						Map< String, String> properties = new HashMap< String, String>();
+						properties.put("maven.tomcat.port", "8082");
+						setProperty.invoke(rc, properties);
 
 						Method executeMaven = runUtils.getMethod("executeMaven", new Class[]{runConfig});
 						executeMaven.invoke(null, rc);
