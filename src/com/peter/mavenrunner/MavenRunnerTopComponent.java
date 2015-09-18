@@ -19,6 +19,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -26,7 +27,6 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
@@ -68,7 +68,6 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		initComponents();
 		setName(Bundle.CTL_MavenRunnerTopComponent());
 		setToolTipText(Bundle.HINT_MavenRunnerTopComponent());
-
 	}
 
 	/**
@@ -192,7 +191,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     private void projectTreeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_projectTreeMouseClicked
-//		InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
+		InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
 //		io.getOut().println("projectTreeMouseClicked");
 
 		if (SwingUtilities.isRightMouseButton(evt)) {
@@ -219,21 +218,27 @@ public final class MavenRunnerTopComponent extends TopComponent {
 //					if (projectInformation != null && projectInformation.getDisplayName().equals("Peter-swing library")) {
 					try {
 						ClassLoader syscl = Lookup.getDefault().lookup(ClassLoader.class);
-						Class runUtils = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunUtils");
-						Class runConfig = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunConfig");
-						Method createRunConfig = runUtils.getMethod("createRunConfig", new Class[]{File.class, Project.class, String.class, List.class});
-						List<String> list = new ArrayList<String>();
+						List<String> goals = new ArrayList<String>();
+						//goals.add("-Dmaven.tomcat.port=8082");
 						String goalsStr[] = node.toString().split(" ");
 						for (String goal : goalsStr) {
-							list.add(goal);
+							goals.add(goal);
 						}
-						Object rc = createRunConfig.invoke(null,
-								FileUtil.toFile(node.project.getProjectDirectory()),
-								node.project, node.projectInformation.getDisplayName(),
-								list);
+
+						Class runUtils = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunUtils");
+						Method createRunConfig = runUtils.getMethod("createRunConfig", new Class[]{File.class, Project.class, String.class, List.class});
+						Object rc = createRunConfig.invoke(null, FileUtil.toFile(node.project.getProjectDirectory()), node.project, node.projectInformation.getDisplayName(), goals);
+
+						Class runConfig = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunConfig");
+
+						Method setProperty = runUtils.getMethod("setProperty", new Class[]{String.class, String.class});
+						setProperty.invoke(rc, "maven.tomcat.port", "8082");
+
 						Method executeMaven = runUtils.getMethod("executeMaven", new Class[]{runConfig});
 						executeMaven.invoke(null, rc);
 					} catch (Exception ex) {
+						io.getOut().println("exception");
+						io.getOut().println(ExceptionUtils.getStackTrace(ex));
 						ex.printStackTrace();
 					}
 //					}
@@ -369,7 +374,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 	}
 
 	void writeProperties(java.util.Properties p) {
-	// better to version settings since initial version as advocated at
+		// better to version settings since initial version as advocated at
 		// http://wiki.apidesign.org/wiki/PropertyFiles
 //		try {
 //			p.setProperty("data", toString(data));
@@ -495,7 +500,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 	}
 
 	private void log(String str) {
-	//InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
+		//InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
 		//io.getOut().println(str);
 	}
 	/*
