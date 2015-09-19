@@ -19,7 +19,7 @@ import org.netbeans.api.project.ProjectInformation;
  */
 public class MyTreeNodeRenderer implements TreeCellRenderer {
 
-	JLabel label = new JLabel();
+	public JLabel label = new JLabel();
 
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -29,7 +29,7 @@ public class MyTreeNodeRenderer implements TreeCellRenderer {
 			ProjectInformation pi = treeNode.projectInformation;
 			label.setText(pi.getDisplayName());
 		} else {
-			label.setText(treeNode.toString());
+			label.setText(treeNode.name);
 		}
 		label.setIcon(treeNode.icon);
 		if (selected) {

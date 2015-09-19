@@ -6,9 +6,11 @@
 package com.peter.mavenrunner;
 
 import com.thoughtworks.xstream.XStream;
+import java.awt.Font;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -62,9 +64,10 @@ import org.openide.windows.InputOutput;
 })
 public final class MavenRunnerTopComponent extends TopComponent {
 
-	MyTreeNode root = new MyTreeNode("Projects", null, null, null);
+	boolean isDebug = true;
+	MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
 
-	Hashtable<String, Vector<String>> data = new Hashtable<String, Vector<String>>();
+	Hashtable<String, Vector<MyTreeNode>> data = new Hashtable<String, Vector<MyTreeNode>>();
 
 	public MavenRunnerTopComponent() {
 		initComponents();
@@ -92,6 +95,8 @@ public final class MavenRunnerTopComponent extends TopComponent {
         treeExpandButton = new javax.swing.JButton();
         treeCollapseButton = new javax.swing.JButton();
         hideEmptyProjectToggleButton = new javax.swing.JToggleButton();
+        fontSizeIncreaseButton = new javax.swing.JButton();
+        fontSizeDecreaseButton = new javax.swing.JButton();
         searchTextField = new javax.swing.JTextField();
 
         addGoalMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/peter/mavenrunner/add.png"))); // NOI18N
@@ -147,7 +152,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 
         add(treePanel, java.awt.BorderLayout.CENTER);
 
-        controlPanel.setLayout(new java.awt.FlowLayout(0, 2, 2));
+        controlPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 2, 2));
 
         treeExpandButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/peter/mavenrunner/treeExpand.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(treeExpandButton, org.openide.util.NbBundle.getMessage(MavenRunnerTopComponent.class, "MavenRunnerTopComponent.treeExpandButton.text")); // NOI18N
@@ -180,6 +185,26 @@ public final class MavenRunnerTopComponent extends TopComponent {
         });
         controlPanel.add(hideEmptyProjectToggleButton);
 
+        fontSizeIncreaseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/peter/mavenrunner/font_add.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fontSizeIncreaseButton, org.openide.util.NbBundle.getMessage(MavenRunnerTopComponent.class, "MavenRunnerTopComponent.fontSizeIncreaseButton.text")); // NOI18N
+        fontSizeIncreaseButton.setPreferredSize(new java.awt.Dimension(26, 26));
+        fontSizeIncreaseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fontSizeIncreaseButtonActionPerformed(evt);
+            }
+        });
+        controlPanel.add(fontSizeIncreaseButton);
+
+        fontSizeDecreaseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/peter/mavenrunner/font_delete.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fontSizeDecreaseButton, org.openide.util.NbBundle.getMessage(MavenRunnerTopComponent.class, "MavenRunnerTopComponent.fontSizeDecreaseButton.text")); // NOI18N
+        fontSizeDecreaseButton.setPreferredSize(new java.awt.Dimension(26, 26));
+        fontSizeDecreaseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fontSizeDecreaseButtonActionPerformed(evt);
+            }
+        });
+        controlPanel.add(fontSizeDecreaseButton);
+
         searchTextField.setText(org.openide.util.NbBundle.getMessage(MavenRunnerTopComponent.class, "MavenRunnerTopComponent.searchTextField.text")); // NOI18N
         searchTextField.setPreferredSize(new java.awt.Dimension(150, 26));
         searchTextField.addActionListener(new java.awt.event.ActionListener() {
@@ -193,7 +218,6 @@ public final class MavenRunnerTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     private void projectTreeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_projectTreeMouseClicked
-		InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
 //		io.getOut().println("projectTreeMouseClicked");
 
 		if (SwingUtilities.isRightMouseButton(evt)) {
@@ -214,15 +238,12 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		} else if (evt.getClickCount() == 2) {
 			if (projectTree.getSelectionPath() != null) {
 				MyTreeNode node = (MyTreeNode) projectTree.getSelectionPath().getLastPathComponent();
-//				io.getOut().println("node = " + node.type + ", " + node.project + ", " + node.projectInformation);
 				if (node.type.equals("goal")) {
-//					ProjectInformation projectInformation = node.projectInformation;
-//					if (projectInformation != null && projectInformation.getDisplayName().equals("Peter-swing library")) {
 					try {
 						ClassLoader syscl = Lookup.getDefault().lookup(ClassLoader.class);
 						List<String> goals = new ArrayList<String>();
 						//goals.add("-Dmaven.tomcat.port=8082");
-						String goalsStr[] = node.toString().split(" ");
+						String goalsStr[] = node.goals.split(" ");
 						for (String goal : goalsStr) {
 							goals.add(goal);
 						}
@@ -234,18 +255,35 @@ public final class MavenRunnerTopComponent extends TopComponent {
 						Class runConfig = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunConfig");
 						Method[] m = runConfig.getDeclaredMethods();
 						for (int i = 0; i < m.length; i++) {
-							io.getOut().println(m[i].toString());
+							log(m[i].toString());
 						}
+
+						// maven properties
 						Method setProperty = runConfig.getMethod("addProperties", new Class[]{Map.class});
-						Map< String, String> properties = new HashMap< String, String>();
-						properties.put("maven.tomcat.port", "8082");
+						Map<String, String> properties = new HashMap<String, String>();
+						for (String property : node.properties) {
+							String s[] = property.split("=");
+							if (s.length >= 2) {
+								properties.put(s[0], s[1]);
+							}
+						}
+						if (node.skipTests) {
+							properties.put("maven.test.skip", "true");
+						}
 						setProperty.invoke(rc, properties);
+
+						// maven profile
+						if (!node.profile.trim().equals("")) {
+							Method setActivatedProfiles = runConfig.getMethod("setActivatedProfiles", new Class[]{java.util.List.class});
+							List<String> profiles = new ArrayList<String>();
+							profiles.add(node.profile);
+							setActivatedProfiles.invoke(rc, profiles);
+						}
 
 						Method executeMaven = runUtils.getMethod("executeMaven", new Class[]{runConfig});
 						executeMaven.invoke(null, rc);
 					} catch (Exception ex) {
-						io.getOut().println("exception");
-						io.getOut().println(ExceptionUtils.getStackTrace(ex));
+						log(ExceptionUtils.getStackTrace(ex));
 						ex.printStackTrace();
 					}
 //					}
@@ -264,22 +302,37 @@ public final class MavenRunnerTopComponent extends TopComponent {
 			return;
 		}
 
-		String goals = JOptionPane.showInputDialog(null, "Please input maven goals", "Add", JOptionPane.QUESTION_MESSAGE);
-		if (goals != null) {
-			MyTreeNode node = (MyTreeNode) ((MyTreeNode) path.getLastPathComponent());
-			MyTreeNode goalNode = new MyTreeNode(goals, "goal", node.project, node.projectInformation);
-			node.add(goalNode);
-			projectTree.updateUI();
+		MavenGoalDialog dialog = new MavenGoalDialog(null, true);
+		dialog.setTitle("Add goals");
+		dialog.setLocationRelativeTo(addGoalMenuItem);
+		dialog.setVisible(true);
+		//String goals = JOptionPane.showInputDialog(null, "Please input maven goals", "Add", JOptionPane.QUESTION_MESSAGE);
+		if (!dialog.isCancel) {
+			try {
+				String name = dialog.nameTextField.getText();
+				String goals = dialog.goalsTextField.getText();
+				String profile = dialog.profileTextField.getText();
+				List<String> properties = Arrays.asList(dialog.propertiesTextArea.getText().split("\n"));
+				boolean skipTests = dialog.skipTestsCheckBox.isSelected();
+				log("0");
+				MyTreeNode node = (MyTreeNode) ((MyTreeNode) path.getLastPathComponent());
+				MyTreeNode goalNode = new MyTreeNode(name, goals, profile, properties, skipTests, "goal", node.project, node.projectInformation);
+				node.add(goalNode);
+				projectTree.updateUI();
+				log("1");
 
-			String key = node.projectInformation.getDisplayName();
-			Vector<String> list = data.get(key);
-			if (list == null) {
-				list = new Vector<String>();
-				log("new list - " + key);
-				data.put(key, list);
+				String key = node.projectInformation.getDisplayName();
+				Vector<MyTreeNode> list = data.get(key);
+				if (list == null) {
+					list = new Vector<MyTreeNode>();
+					log("new list - " + key);
+					data.put(key, list);
+				}
+				list.add(node);
+				NbPreferences.forModule(this.getClass()).put("data", toString(data));
+			} catch (Exception ex) {
+				log(ExceptionUtils.getStackTrace(ex));
 			}
-			list.add(goals);
-			NbPreferences.forModule(this.getClass()).put("data", toString(data));
 		}
     }//GEN-LAST:event_addGoalMenuItemActionPerformed
 
@@ -293,14 +346,14 @@ public final class MavenRunnerTopComponent extends TopComponent {
 			String newGoals = JOptionPane.showInputDialog(null, "Please input maven goals", node.getUserObject());
 			if (newGoals != null) {
 				String key = node.projectInformation.getDisplayName();
-				Vector<String> list = data.get(key);
+				Vector<MyTreeNode> list = data.get(key);
 				if (list == null) {
-					list = new Vector<String>();
+					list = new Vector<MyTreeNode>();
 					data.put(key, list);
 				}
 				int index = list.indexOf(node.getUserObject());
 				list.remove(node.getUserObject());
-				list.add(index, newGoals);
+				list.add(index, node);
 
 				node.setUserObject(newGoals);
 				projectTree.updateUI();
@@ -321,9 +374,9 @@ public final class MavenRunnerTopComponent extends TopComponent {
 			projectTree.updateUI();
 
 			String key = node.projectInformation.getDisplayName();
-			Vector<String> list = data.get(key);
+			Vector<MyTreeNode> list = data.get(key);
 			if (list == null) {
-				list = new Vector<String>();
+				list = new Vector<MyTreeNode>();
 				data.put(key, list);
 			}
 			log("before delete " + list.size());
@@ -349,11 +402,31 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		refreshTree(!hideEmptyProjectToggleButton.isSelected());
     }//GEN-LAST:event_searchTextFieldActionPerformed
 
+    private void fontSizeIncreaseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontSizeIncreaseButtonActionPerformed
+		MyTreeNodeRenderer renderer = (MyTreeNodeRenderer) projectTree.getCellRenderer();
+		Font oldFont = renderer.label.getFont();
+		Font font = new Font(oldFont.getFontName(), oldFont.getStyle(), oldFont.getSize() + 1);
+		renderer.label.setFont(font);
+		projectTree.updateUI();
+		NbPreferences.forModule(this.getClass()).putInt("font", font.getSize());
+    }//GEN-LAST:event_fontSizeIncreaseButtonActionPerformed
+
+    private void fontSizeDecreaseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontSizeDecreaseButtonActionPerformed
+		MyTreeNodeRenderer renderer = (MyTreeNodeRenderer) projectTree.getCellRenderer();
+		Font oldFont = renderer.label.getFont();
+		Font font = new Font(oldFont.getFontName(), oldFont.getStyle(), oldFont.getSize() - 1);
+		renderer.label.setFont(font);
+		projectTree.updateUI();
+		NbPreferences.forModule(this.getClass()).putInt("font", font.getSize());
+    }//GEN-LAST:event_fontSizeDecreaseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem addGoalMenuItem;
     private javax.swing.JPanel controlPanel;
     private javax.swing.JMenuItem deleteGoalMenuItem;
     private javax.swing.JMenuItem editGoalMenuItem;
+    private javax.swing.JButton fontSizeDecreaseButton;
+    private javax.swing.JButton fontSizeIncreaseButton;
     private javax.swing.JToggleButton hideEmptyProjectToggleButton;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JTree projectTree;
@@ -371,33 +444,23 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		projectTree.setModel(new DefaultTreeModel(root));
 		projectTree.setShowsRootHandles(true);
 		projectTree.setRootVisible(false);
-		projectTree.setCellRenderer(new MyTreeNodeRenderer());
+		MyTreeNodeRenderer renderer = new MyTreeNodeRenderer();
+		projectTree.setCellRenderer(renderer);
+
+		Font oldFont = renderer.label.getFont();
+		Font font = new Font(oldFont.getFontName(), oldFont.getStyle(), NbPreferences.forModule(this.getClass()).getInt("font", 12));
+		renderer.label.setFont(font);
 		refreshTree(true);
 	}
 
 	@Override
 	public void componentClosed() {
-		// TODO add custom code on component closing
 	}
 
 	void writeProperties(java.util.Properties p) {
-		// better to version settings since initial version as advocated at
-		// http://wiki.apidesign.org/wiki/PropertyFiles
-//		try {
-//			p.setProperty("data", toString(data));
-//		} catch (Exception ex) {
-//			ex.printStackTrace();
-//		}
-//
 	}
 
 	void readProperties(java.util.Properties p) {
-//		try {
-//			data = (Hashtable<String, Vector<String>>) fromString(p.getProperty("data"));
-//		} catch (Exception ex) {
-//			ex.printStackTrace();
-//		}
-//
 	}
 
 	void refreshTree(boolean showEmptyNode) {
@@ -405,31 +468,34 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		try {
 			for (Project p : OpenProjects.getDefault().getOpenProjects()) {
 				ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
-				MyTreeNode node = new MyTreeNode(projectInformation.getDisplayName(), "project", p, projectInformation);
+				MyTreeNode node = new MyTreeNode(projectInformation.getDisplayName(), null, null, null, false, "project", p, projectInformation);
 				node.icon = projectInformation.getIcon();
 
 				// load goals
-				String key = node.projectInformation.getDisplayName();
-				String value = NbPreferences.forModule(this.getClass()).get("data", null);
-				data = (Hashtable<String, Vector<String>>) fromString(value);
-				if (data == null) {
-					data = new Hashtable< String, Vector< String>>();
-					log("create new data");
-				}
-				if (data.get(key) == null) {
-					data.put(key, new Vector<String>());
-					log("add " + key + " to data");
-				}
+				try {
+					String key = node.projectInformation.getDisplayName();
+					String value = NbPreferences.forModule(this.getClass()).get("data", null);
+					data = (Hashtable<String, Vector<MyTreeNode>>) fromString(value);
+					if (data == null) {
+						data = new Hashtable< String, Vector< MyTreeNode>>();
+						log("create new data");
+					}
+					if (data.get(key) == null) {
+						data.put(key, new Vector<MyTreeNode>());
+						log("add " + key + " to data");
+					}
 
-				Vector<String> goals = data.get(key);
-				if (goals != null) {
-					for (String goal : goals) {
-						String searchString = searchTextField.getText().trim();
-						if (searchString.equals("") || goal.toLowerCase().contains(searchString)) {
-							MyTreeNode goalsNode = new MyTreeNode(goal, "goal", p, projectInformation);
-							node.add(goalsNode);
+					Vector<MyTreeNode> nodes = data.get(key);
+					if (nodes != null) {
+						for (MyTreeNode n : nodes) {
+							String searchString = searchTextField.getText().trim();
+							if (searchString.equals("") || n.name.toLowerCase().contains(searchString.toLowerCase())) {
+								node.add(n);
+							}
 						}
 					}
+				} catch (Exception ex) {
+					log(ExceptionUtils.getStackTrace(ex));
 				}
 				// load goals end
 
@@ -442,7 +508,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 				}
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			log(ExceptionUtils.getStackTrace(ex));
 		}
 		projectTree.updateUI();
 		expandAll(projectTree, true);
@@ -488,27 +554,26 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		return TopComponent.PERSISTENCE_ALWAYS;
 	}
 
-	private Hashtable<String, Vector<String>> fromString(String s) {
+	private Hashtable<String, Vector<MyTreeNode>> fromString(String s) {
 		try {
 			XStream xstream = new XStream();
-			return (Hashtable<String, Vector<String>>) xstream.fromXML(s);
+			return (Hashtable<String, Vector<MyTreeNode>>) xstream.fromXML(s);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return null;
 		}
 	}
 
-	/**
-	 * Write the object to a Base64 string.
-	 */
-	private String toString(Hashtable<String, Vector<String>> o) {
+	private String toString(Hashtable<String, Vector<MyTreeNode>> o) {
 		XStream xstream = new XStream();
 		return xstream.toXML(o);
 	}
 
 	private void log(String str) {
-		//InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
-		//io.getOut().println(str);
+		if (isDebug) {
+			InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
+			io.getOut().println(str);
+		}
 	}
 	/*
 	 @Override
