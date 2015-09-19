@@ -5,6 +5,8 @@
  */
 package com.peter.mavenrunner;
 
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author peter
@@ -144,7 +146,11 @@ public class MavenGoalDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-		setVisible(false);
+		if (nameTextField.getText().trim().equals("")) {
+			JOptionPane.showMessageDialog(null, "Name cannot be empty", "error", JOptionPane.ERROR_MESSAGE);
+		} else {
+			setVisible(false);
+		}
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelTextFieldActionPerformed

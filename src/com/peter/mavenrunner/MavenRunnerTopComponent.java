@@ -66,7 +66,7 @@ import org.openide.windows.InputOutput;
 })
 public final class MavenRunnerTopComponent extends TopComponent {
 
-	boolean isDebug = true;
+	static boolean isDebug = false;
 	MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
 
 	Hashtable<String, Vector<PersistData>> data = new Hashtable<String, Vector<PersistData>>();
@@ -323,6 +323,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 				String profile = dialog.profileTextField.getText();
 				List<String> properties = Arrays.asList(dialog.propertiesTextArea.getText().split("\n"));
 				boolean skipTests = dialog.skipTestsCheckBox.isSelected();
+
 				MyTreeNode node = (MyTreeNode) ((MyTreeNode) path.getLastPathComponent());
 				MyTreeNode goalNode = new MyTreeNode(name, goals, profile, properties, skipTests, "goal", node.project, node.projectInformation);
 				node.add(goalNode);
@@ -354,7 +355,8 @@ public final class MavenRunnerTopComponent extends TopComponent {
 			dialog.setLocationRelativeTo(addGoalMenuItem);
 			dialog.nameTextField.setText(node.name);
 			dialog.goalsTextField.setText(node.goals);
-			dialog.profileTextField.setText(StringUtils.join(node.properties, "\n"));
+			dialog.profileTextField.setText(node.profile);
+			dialog.propertiesTextArea.setText(StringUtils.join(node.properties, "\n"));
 			dialog.skipTestsCheckBox.setSelected(node.skipTests);
 			dialog.setVisible(true);
 			//String newGoals = JOptionPane.showInputDialog(null, "Please input maven goals", node.getUserObject());
@@ -366,11 +368,32 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					list = new Vector<PersistData>();
 					data.put(key, list);
 				}
-				int index = list.indexOf(node.getUserObject());
-				list.remove(node.getUserObject());
-				list.add(index, new PersistData(node.type, node.projectInformation.getDisplayName(), node.name, node.goals, node.profile, node.properties, node.skipTests));
 
-				node.setUserObject(newGoals);
+				int index = 0;
+				Iterator<PersistData> i = list.iterator();
+				while (i.hasNext()) {
+					PersistData p = i.next();
+					if (p.name.equals(node.name)) {
+						break;
+					}
+					index++;
+				}
+				String name = dialog.nameTextField.getText();
+				String goals = dialog.goalsTextField.getText();
+				String profile = dialog.profileTextField.getText();
+				List<String> properties = Arrays.asList(dialog.propertiesTextArea.getText().split("\n"));
+				boolean skipTests = dialog.skipTestsCheckBox.isSelected();
+
+				log("index=" + index);
+				list.remove(index);
+				list.add(index, new PersistData(node.type, node.projectInformation.getDisplayName(), name, goals, profile, properties, skipTests));
+
+				node.name = name;
+				node.goals = goals;
+				node.profile = profile;
+				node.properties = properties;
+				node.skipTests = skipTests;
+
 				projectTree.updateUI();
 				NbPreferences.forModule(this.getClass()).put("data", toString(data));
 			}
@@ -383,7 +406,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 			return;
 		}
 		MyTreeNode node = (MyTreeNode) ((MyTreeNode) path.getLastPathComponent());
-		if (node.type.equals("goal")) {
+		if (node.type.equals("goal") || isDebug) {
 			MyTreeNode parentNode = (MyTreeNode) node.getParent();
 			parentNode.remove(node);
 			projectTree.updateUI();
@@ -612,7 +635,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		return xstream.toXML(o);
 	}
 
-	private void log(String str) {
+	public static void log(String str) {
 		if (isDebug) {
 			InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
 			io.getOut().println(str);
