@@ -66,7 +66,7 @@ import org.openide.windows.InputOutput;
 })
 public final class MavenRunnerTopComponent extends TopComponent {
 
-	static boolean isDebug = false;
+	static boolean isDebug = true;
 	MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
 
 	Hashtable<String, Vector<PersistData>> data = new Hashtable<String, Vector<PersistData>>();
@@ -362,7 +362,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 			dialog.propertiesTextArea.setText(StringUtils.join(node.properties, "\n"));
 			dialog.skipTestsCheckBox.setSelected(node.skipTests);
 			dialog.setVisible(true);
-			
+
 			if (!dialog.isCancel) {
 				String name = dialog.nameTextField.getText();
 				if (name.trim().equals("")) {
@@ -424,12 +424,16 @@ public final class MavenRunnerTopComponent extends TopComponent {
 				data.put(key, list);
 			}
 			log("before delete " + list.size() + ", key=" + key);
-			Iterator<PersistData> i = list.iterator();
-			while (i.hasNext()) {
-				PersistData p = i.next();
-				if (p.name.equals(node.name)) {
-					list.remove(p);
+			try {
+				Enumeration i = list.elements();
+				while (i.hasMoreElements()) {
+					PersistData p = (PersistData) i.nextElement();
+					if (p.name.equals(node.name)) {
+						list.remove(p);
+					}
 				}
+			} catch (Exception ex) {
+				log(ExceptionUtils.getStackTrace(ex));
 			}
 			log("after delete " + list.size());
 			NbPreferences.forModule(this.getClass()).put("data", toString(data));
@@ -558,7 +562,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					if (persistData != null) {
 						for (PersistData n : persistData) {
 							String searchString = searchTextField.getText().trim();
-							if ((searchString.equals("") || n.name.toLowerCase().contains(searchString.toLowerCase())) && n.name.trim().equals("") && n.type.equals("goal")) {
+							if ((searchString.equals("") || n.name.toLowerCase().contains(searchString.toLowerCase())) && !n.name.trim().equals("") && n.type.equals("goal")) {
 								node.add(new MyTreeNode(n.name, n.goals, n.profile, n.properties, n.skipTests, n.type, node.project, node.projectInformation));
 							}
 						}
