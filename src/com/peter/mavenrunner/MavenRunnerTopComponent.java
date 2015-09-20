@@ -66,7 +66,7 @@ import org.openide.windows.InputOutput;
 })
 public final class MavenRunnerTopComponent extends TopComponent {
 
-	static boolean isDebug = true;
+	static boolean isDebug = false;
 	MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
 
 	Hashtable<String, Vector<PersistData>> data = new Hashtable<String, Vector<PersistData>>();
