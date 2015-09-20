@@ -552,7 +552,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					if (persistData != null) {
 						for (PersistData n : persistData) {
 							String searchString = searchTextField.getText().trim();
-							if (searchString.equals("") || n.name.toLowerCase().contains(searchString.toLowerCase()) && n.type.equals("goal")) {
+							if (searchString.equals("") || n.name.toLowerCase().contains(searchString.toLowerCase()) && n.type.equals("goal") && !n.name.trim().equals("")) {
 								node.add(new MyTreeNode(n.name, n.goals, n.profile, n.properties, n.skipTests, n.type, node.project, node.projectInformation));
 							}
 						}
