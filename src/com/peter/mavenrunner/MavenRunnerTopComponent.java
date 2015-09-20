@@ -319,6 +319,9 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		if (!dialog.isCancel) {
 			try {
 				String name = dialog.nameTextField.getText();
+				if (name.trim().equals("")) {
+					return;
+				}
 				String goals = dialog.goalsTextField.getText();
 				String profile = dialog.profileTextField.getText();
 				List<String> properties = Arrays.asList(dialog.propertiesTextArea.getText().split("\n"));
@@ -359,9 +362,12 @@ public final class MavenRunnerTopComponent extends TopComponent {
 			dialog.propertiesTextArea.setText(StringUtils.join(node.properties, "\n"));
 			dialog.skipTestsCheckBox.setSelected(node.skipTests);
 			dialog.setVisible(true);
-			//String newGoals = JOptionPane.showInputDialog(null, "Please input maven goals", node.getUserObject());
-			String newGoals = dialog.goalsTextField.getText();
-			if (newGoals != null) {
+			
+			if (!dialog.isCancel) {
+				String name = dialog.nameTextField.getText();
+				if (name.trim().equals("")) {
+					return;
+				}
 				String key = node.projectInformation.getDisplayName();
 				Vector<PersistData> list = data.get(key);
 				if (list == null) {
@@ -378,7 +384,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					}
 					index++;
 				}
-				String name = dialog.nameTextField.getText();
+
 				String goals = dialog.goalsTextField.getText();
 				String profile = dialog.profileTextField.getText();
 				List<String> properties = Arrays.asList(dialog.propertiesTextArea.getText().split("\n"));
@@ -552,7 +558,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					if (persistData != null) {
 						for (PersistData n : persistData) {
 							String searchString = searchTextField.getText().trim();
-							if (searchString.equals("") || n.name.toLowerCase().contains(searchString.toLowerCase()) && n.type.equals("goal")) {
+							if ((searchString.equals("") || n.name.toLowerCase().contains(searchString.toLowerCase())) && n.name.trim().equals("") && n.type.equals("goal")) {
 								node.add(new MyTreeNode(n.name, n.goals, n.profile, n.properties, n.skipTests, n.type, node.project, node.projectInformation));
 							}
 						}
