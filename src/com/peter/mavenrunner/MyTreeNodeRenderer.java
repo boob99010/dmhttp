@@ -24,7 +24,7 @@ public class MyTreeNodeRenderer implements TreeCellRenderer {
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		MyTreeNode treeNode = (MyTreeNode) value;
-		label.setOpaque(true);
+		label.setOpaque(false);
 		if (treeNode.type != null && treeNode.type.equals("project")) {
 			ProjectInformation pi = treeNode.projectInformation;
 			label.setText(pi.getDisplayName());
