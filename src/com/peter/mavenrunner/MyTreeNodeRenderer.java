@@ -39,5 +39,4 @@ public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 		}
 		return this;
 	}
-
 }
