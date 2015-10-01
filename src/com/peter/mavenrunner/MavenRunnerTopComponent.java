@@ -458,18 +458,18 @@ public final class MavenRunnerTopComponent extends TopComponent {
 
     private void fontSizeIncreaseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontSizeIncreaseButtonActionPerformed
 		MyTreeNodeRenderer renderer = (MyTreeNodeRenderer) projectTree.getCellRenderer();
-		Font oldFont = renderer.label.getFont();
+		Font oldFont = renderer.getFont();
 		Font font = new Font(oldFont.getFontName(), oldFont.getStyle(), oldFont.getSize() + 1);
-		renderer.label.setFont(font);
+		renderer.setFont(font);
 		projectTree.updateUI();
 		NbPreferences.forModule(this.getClass()).putInt("font", font.getSize());
     }//GEN-LAST:event_fontSizeIncreaseButtonActionPerformed
 
     private void fontSizeDecreaseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontSizeDecreaseButtonActionPerformed
 		MyTreeNodeRenderer renderer = (MyTreeNodeRenderer) projectTree.getCellRenderer();
-		Font oldFont = renderer.label.getFont();
+		Font oldFont = renderer.getFont();
 		Font font = new Font(oldFont.getFontName(), oldFont.getStyle(), oldFont.getSize() - 1);
-		renderer.label.setFont(font);
+		renderer.setFont(font);
 		projectTree.updateUI();
 		NbPreferences.forModule(this.getClass()).putInt("font", font.getSize());
     }//GEN-LAST:event_fontSizeDecreaseButtonActionPerformed
@@ -519,9 +519,9 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		MyTreeNodeRenderer renderer = new MyTreeNodeRenderer();
 		projectTree.setCellRenderer(renderer);
 
-		Font oldFont = renderer.label.getFont();
+		Font oldFont = renderer.getFont();
 		Font font = new Font(oldFont.getFontName(), oldFont.getStyle(), NbPreferences.forModule(this.getClass()).getInt("font", 12));
-		renderer.label.setFont(font);
+		renderer.setFont(font);
 		refreshTree(true);
 	}
 
