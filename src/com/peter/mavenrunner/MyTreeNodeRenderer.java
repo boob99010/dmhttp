@@ -5,11 +5,11 @@
  */
 package com.peter.mavenrunner;
 
-import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.api.project.ProjectInformation;
 
@@ -18,6 +18,10 @@ import org.netbeans.api.project.ProjectInformation;
  * @author peter
  */
 public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
+
+	public MyTreeNodeRenderer() {
+		setBorder(new EmptyBorder(5, 5, 5, 5));
+	}
 
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
