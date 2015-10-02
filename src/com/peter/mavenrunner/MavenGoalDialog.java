@@ -5,6 +5,8 @@
  */
 package com.peter.mavenrunner;
 
+import java.awt.Image;
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 /**
@@ -21,6 +23,7 @@ public class MavenGoalDialog extends javax.swing.JDialog {
 	public MavenGoalDialog(java.awt.Frame parent, boolean modal) {
 		super(parent, modal);
 		initComponents();
+		setIconImage(new ImageIcon(getClass().getResource("/com/peter/mavenrunner/mavenIcon.png")).getImage());
 	}
 
 	/**

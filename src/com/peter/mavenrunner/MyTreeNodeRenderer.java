@@ -5,11 +5,11 @@
  */
 package com.peter.mavenrunner;
 
-import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.api.project.ProjectInformation;
 
@@ -17,29 +17,30 @@ import org.netbeans.api.project.ProjectInformation;
  *
  * @author peter
  */
-public class MyTreeNodeRenderer implements TreeCellRenderer {
+public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 
-	public JLabel label = new JLabel();
+	public MyTreeNodeRenderer() {
+		setBorder(new EmptyBorder(5, 5, 5, 5));
+	}
 
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		MyTreeNode treeNode = (MyTreeNode) value;
-		label.setOpaque(false);
+		setOpaque(true);
 		if (treeNode.type != null && treeNode.type.equals("project")) {
 			ProjectInformation pi = treeNode.projectInformation;
-			label.setText(pi.getDisplayName());
+			setText(pi.getDisplayName());
 		} else {
-			label.setText(treeNode.name);
+			setText(treeNode.name);
 		}
-		label.setIcon(treeNode.icon);
+		setIcon(treeNode.icon);
 		if (selected) {
-			label.setBackground(UIManager.getColor("Tree.selectionBackground"));
-			label.setForeground(Color.white);
+			setBackground(UIManager.getColor("Tree.selectionBackground"));
+			setForeground(UIManager.getColor("Tree.selectionForeground"));
 		} else {
-			label.setBackground(UIManager.getColor("Tree.background"));
-			label.setForeground(Color.black);
+			setBackground(UIManager.getColor("Tree.background"));
+			setForeground(UIManager.getColor("Tree.foreground"));
 		}
-		return label;
+		return this;
 	}
-
 }
