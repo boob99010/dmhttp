@@ -21,12 +21,12 @@ public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 
 	public MyTreeNodeRenderer() {
 		setBorder(new EmptyBorder(5, 5, 5, 5));
+		//setOpaque(true);
 	}
 
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		MyTreeNode treeNode = (MyTreeNode) value;
-		setOpaque(true);
 		if (treeNode.type != null && treeNode.type.equals("project")) {
 			ProjectInformation pi = treeNode.projectInformation;
 			setText(pi.getDisplayName());
@@ -35,10 +35,10 @@ public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 		}
 		setIcon(treeNode.icon);
 		if (selected) {
-			setBackground(UIManager.getColor("Tree.selectionBackground"));
+//			setBackground(UIManager.getColor("Tree.selectionBackground"));
 			setForeground(UIManager.getColor("Tree.selectionForeground"));
 		} else {
-			setBackground(UIManager.getColor("Tree.background"));
+//			setBackground(UIManager.getColor("Tree.background"));
 			setForeground(UIManager.getColor("Tree.foreground"));
 		}
 		return this;
