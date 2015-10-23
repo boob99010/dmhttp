@@ -541,6 +541,9 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		try {
 			for (Project p : OpenProjects.getDefault().getOpenProjects()) {
 				ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
+				if (!new File(p.getProjectDirectory().getPath() + File.separator + "pom.xml").exists()) {
+					continue;
+				}
 				MyTreeNode node = new MyTreeNode(projectInformation.getDisplayName(), null, null, null, false, "project", p, projectInformation);
 				node.icon = projectInformation.getIcon();
 
