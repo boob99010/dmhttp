@@ -706,7 +706,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 		}
 		
 		((DefaultTreeModel) projectTree.getModel()).nodeStructureChanged(root);
-		//((DefaultTreeModel) projectTree.getModel()).reload();
+		((DefaultTreeModel) projectTree.getModel()).reload();
 		//projectTree.repaint();
 		projectTree.updateUI();
 		expandAll(projectTree, true);
