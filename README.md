@@ -1,7 +1,7 @@
 # MavenRunner
 
-Eclipse has a great plugin call “Eclipse runner” https://marketplace.eclipse.org/content/eclipse-runner , i found out netbeans doesn’t have any similar one. So i develop one for netbeans. You can add maven goals under the tree node of any project. Double click the goal name will run maven in netbeans. You can download it from http://plugins.netbeans.org/plugin/60365/?show=true , or search “Maven Runner” in netbeans’ plugin manager.
-
+ +Eclipse has a great plugin call "Eclipse runner" https://marketplace.eclipse.org/content/eclipse-runner , i found out netbeans doesn’t have any similar one. So i develop one for netbeans. You can add maven goals under the tree node of any project. Double click the goal name will run maven in netbeans. You can download it from http://plugins.netbeans.org/plugin/60381/mavenrunner , or search “Maven Runner” in netbeans’ plugin manager.
+ 
 ![alt tag](http://peter.kingofcoders.com/wp-content/uploads/2015/09/Maven-runner-big.png)
 
 # Usage

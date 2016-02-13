@@ -10,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.api.project.ProjectInformation;
 
@@ -21,7 +22,7 @@ public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 
 	public MyTreeNodeRenderer() {
 		setBorder(new EmptyBorder(4, 4, 4, 4));
-		//setOpaque(true);
+		setOpaque(true);
 	}
 
 	@Override
@@ -35,12 +36,22 @@ public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 		}
 		setIcon(treeNode.icon);
 		if (selected) {
-			setBackground(UIManager.getColor("Tree.selectionBackground"));
+			if (UIManager.getColor("nimbusSelectionBackground") != null) {
+				setBackground(UIManager.getColor("nimbusSelectionBackground"));
+			} else {
+				setBackground(UIManager.getColor("Tree.selectionBackground"));
+			}
 			setForeground(UIManager.getColor("Tree.selectionForeground"));
 		} else {
-			setBackground(UIManager.getColor("Tree.background"));
+			if (UIManager.getColor("nimbusBackground") != null) {
+				setBackground(UIManager.getColor("nimbusBackground"));
+			} else {
+				setBackground(UIManager.getColor("Tree.background"));
+			}
 			setForeground(UIManager.getColor("Tree.foreground"));
 		}
+		//MavenRunnerTopComponent.log(UIManager.getColor("Tree.background").toString());
+
 //		if (selected) {
 //			setBackground(new Color(9, 80, 208));
 //			setForeground(Color.white);
