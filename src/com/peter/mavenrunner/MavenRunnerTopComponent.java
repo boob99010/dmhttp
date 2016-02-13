@@ -23,8 +23,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.w3c.dom.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -66,7 +72,7 @@ import org.openide.windows.InputOutput;
 })
 public final class MavenRunnerTopComponent extends TopComponent {
 
-	static boolean isDebug = false;
+	static boolean isDebug = true;
 	MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
 
 	Hashtable<String, Vector<PersistData>> data = new Hashtable<String, Vector<PersistData>>();
@@ -476,8 +482,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 
     private void debugButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugButtonActionPerformed
 		try {
-			ClassLoader syscl = Lookup.getDefault().lookup(ClassLoader.class
-			);
+			ClassLoader syscl = Lookup.getDefault().lookup(ClassLoader.class);
 			Class runUtils = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunUtils");
 			Class runConfig = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunConfig");
 			Method[] m = runConfig.getDeclaredMethods();
@@ -547,6 +552,18 @@ public final class MavenRunnerTopComponent extends TopComponent {
 				MyTreeNode node = new MyTreeNode(projectInformation.getDisplayName(), null, null, null, false, "project", p, projectInformation);
 				node.icon = projectInformation.getIcon();
 
+				// load goals from nbactions.xml
+				File ab = new File(p.getProjectDirectory().getPath() + File.separator + "nbactions.xml");
+				log("ab=" + ab.exists());
+
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				Document doc = builder.parse("sd");
+				XPathFactory xPathfactory = XPathFactory.newInstance();
+				XPath xpath = xPathfactory.newXPath();
+				XPathExpression expr = xpath.compile("sd");
+
+				// end load goals from nbactions.xml
 				// load goals
 				try {
 					String key = node.projectInformation.getDisplayName();
@@ -580,10 +597,8 @@ public final class MavenRunnerTopComponent extends TopComponent {
 
 				if (showEmptyNode) {
 					root.add(node);
-				} else {
-					if (node.getChildCount() > 0) {
-						root.add(node);
-					}
+				} else if (node.getChildCount() > 0) {
+					root.add(node);
 				}
 			}
 		} catch (Exception ex) {
