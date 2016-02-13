@@ -5,7 +5,6 @@
  */
 package com.peter.mavenrunner;
 
-import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.JTree;
