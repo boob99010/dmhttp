@@ -110,6 +110,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
         hideEmptyProjectToggleButton = new javax.swing.JToggleButton();
         fontSizeIncreaseButton = new javax.swing.JButton();
         fontSizeDecreaseButton = new javax.swing.JButton();
+        hideDefaultGoalButton = new javax.swing.JToggleButton();
         searchTextField = new javax.swing.JTextField();
         debugButton = new javax.swing.JButton();
 
@@ -219,6 +220,18 @@ public final class MavenRunnerTopComponent extends TopComponent {
         });
         controlPanel.add(fontSizeDecreaseButton);
 
+        hideDefaultGoalButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/peter/mavenrunner/star.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(hideDefaultGoalButton, org.openide.util.NbBundle.getMessage(MavenRunnerTopComponent.class, "MavenRunnerTopComponent.hideDefaultGoalButton.text")); // NOI18N
+        hideDefaultGoalButton.setToolTipText(org.openide.util.NbBundle.getMessage(MavenRunnerTopComponent.class, "MavenRunnerTopComponent.hideDefaultGoalButton.toolTipText")); // NOI18N
+        hideDefaultGoalButton.setMaximumSize(null);
+        hideDefaultGoalButton.setPreferredSize(new java.awt.Dimension(26, 26));
+        hideDefaultGoalButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hideDefaultGoalButtonActionPerformed(evt);
+            }
+        });
+        controlPanel.add(hideDefaultGoalButton);
+
         searchTextField.setText(org.openide.util.NbBundle.getMessage(MavenRunnerTopComponent.class, "MavenRunnerTopComponent.searchTextField.text")); // NOI18N
         searchTextField.setPreferredSize(new java.awt.Dimension(150, 26));
         searchTextField.addActionListener(new java.awt.event.ActionListener() {
@@ -253,13 +266,17 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					addGoalMenuItem.setEnabled(false);
 					editGoalMenuItem.setEnabled(true);
 					deleteGoalMenuItem.setEnabled(true);
+				} else if (node.type.equals("default goal")) {
+					addGoalMenuItem.setEnabled(false);
+					editGoalMenuItem.setEnabled(false);
+					deleteGoalMenuItem.setEnabled(false);
 				}
 			}
 			treePopupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
 		} else if (evt.getClickCount() == 2) {
 			if (projectTree.getSelectionPath() != null) {
 				MyTreeNode node = (MyTreeNode) projectTree.getSelectionPath().getLastPathComponent();
-				if (node.type.equals("goal")) {
+				if (node.type.equals("goal") || node.type.equals("default goal")) {
 					try {
 						ClassLoader syscl = Lookup.getDefault().lookup(ClassLoader.class);
 						List<String> goals = new ArrayList<String>();
@@ -498,6 +515,10 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		}
     }//GEN-LAST:event_debugButtonActionPerformed
 
+    private void hideDefaultGoalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideDefaultGoalButtonActionPerformed
+		refreshTree(!hideEmptyProjectToggleButton.isSelected());
+    }//GEN-LAST:event_hideDefaultGoalButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem addGoalMenuItem;
     private javax.swing.JPanel controlPanel;
@@ -506,6 +527,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
     private javax.swing.JMenuItem editGoalMenuItem;
     private javax.swing.JButton fontSizeDecreaseButton;
     private javax.swing.JButton fontSizeIncreaseButton;
+    private javax.swing.JToggleButton hideDefaultGoalButton;
     private javax.swing.JToggleButton hideEmptyProjectToggleButton;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JTree projectTree;
@@ -546,6 +568,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		root.removeAllChildren();
 
 		try {
+			String searchString = searchTextField.getText().trim();
 			for (Project p : OpenProjects.getDefault().getOpenProjects()) {
 				ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
 				if (!new File(p.getProjectDirectory().getPath() + File.separator + "pom.xml").exists()) {
@@ -555,60 +578,65 @@ public final class MavenRunnerTopComponent extends TopComponent {
 				node.icon = projectInformation.getIcon();
 
 				// load goals from nbactions.xml
-				if (new File(p.getProjectDirectory().getPath() + File.separator + "nbactions.xml").exists()) {
-					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-					DocumentBuilder builder = factory.newDocumentBuilder();
-					Document doc = builder.parse(p.getProjectDirectory().getPath() + File.separator + "nbactions.xml");
-					XPathFactory xPathfactory = XPathFactory.newInstance();
-					XPath xpath = xPathfactory.newXPath();
-					XPathExpression expr = xpath.compile("//action");
-					NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-					for (int x = 0; x < nl.getLength(); x++) {
-						NodeList childs = nl.item(x).getChildNodes();
-						String actionName = "";
-						String goals = "";
-						String profiles = "";
-						List<String> properties = new ArrayList<String>();
-						boolean skipTest = false;
+				if (!hideDefaultGoalButton.isSelected()) {
+					if (new File(p.getProjectDirectory().getPath() + File.separator + "nbactions.xml").exists()) {
+						DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+						DocumentBuilder builder = factory.newDocumentBuilder();
+						Document doc = builder.parse(p.getProjectDirectory().getPath() + File.separator + "nbactions.xml");
+						XPathFactory xPathfactory = XPathFactory.newInstance();
+						XPath xpath = xPathfactory.newXPath();
+						XPathExpression expr = xpath.compile("//action");
+						NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+						for (int x = 0; x < nl.getLength(); x++) {
+							NodeList childs = nl.item(x).getChildNodes();
+							String actionName = "";
+							String goals = "";
+							String profiles = "";
+							List<String> properties = new ArrayList<String>();
+							boolean skipTest = false;
 
-						for (int y = 0; y < childs.getLength(); y++) {
-							//log(childs.item(y).getNodeName());
-							if (childs.item(y).getNodeName().equals("actionName")) {
-								actionName = childs.item(y).getTextContent();
-							} else if (childs.item(y).getNodeName().equals("goals")) {
-								NodeList goalNodes = childs.item(y).getChildNodes();
-								for (int z = 0; z < goalNodes.getLength(); z++) {
-									if (goalNodes.item(z).getNodeName().equals("goal")) {
-										goals += goalNodes.item(z).getTextContent() + " ";
+							for (int y = 0; y < childs.getLength(); y++) {
+								//log(childs.item(y).getNodeName());
+								if (childs.item(y).getNodeName().equals("actionName")) {
+									actionName = childs.item(y).getTextContent();
+								} else if (childs.item(y).getNodeName().equals("goals")) {
+									NodeList goalNodes = childs.item(y).getChildNodes();
+									for (int z = 0; z < goalNodes.getLength(); z++) {
+										if (goalNodes.item(z).getNodeName().equals("goal")) {
+											goals += goalNodes.item(z).getTextContent() + " ";
+										}
 									}
-								}
-							} else if (childs.item(y).getNodeName().equals("activatedProfiles")) {
-								NodeList profileNodes = childs.item(y).getChildNodes();
-								for (int z = 0; z < profileNodes.getLength(); z++) {
-									if (profileNodes.item(z).getNodeName().equals("activatedProfile")) {
-										profiles += profileNodes.item(z).getTextContent() + " ";
+								} else if (childs.item(y).getNodeName().equals("activatedProfiles")) {
+									NodeList profileNodes = childs.item(y).getChildNodes();
+									for (int z = 0; z < profileNodes.getLength(); z++) {
+										if (profileNodes.item(z).getNodeName().equals("activatedProfile")) {
+											profiles += profileNodes.item(z).getTextContent() + " ";
+										}
 									}
-								}
-							} else if (childs.item(y).getNodeName().equals("properties")) {
-								NodeList profileNodes = childs.item(y).getChildNodes();
-								log("length=" + profileNodes.getLength());
-								for (int z = 0; z < profileNodes.getLength(); z++) {
-									if (!profileNodes.item(z).getNodeName().equals("#text")) {
-										properties.add(">" + profileNodes.item(z).getNodeName() + "=" + profileNodes.item(z).getTextContent().trim());
-										if (profileNodes.item(z).getNodeName().equals("skipTests")) {
-											skipTest = Boolean.parseBoolean(profileNodes.item(z).getTextContent().trim());
+								} else if (childs.item(y).getNodeName().equals("properties")) {
+									NodeList profileNodes = childs.item(y).getChildNodes();
+									log("length=" + profileNodes.getLength());
+									for (int z = 0; z < profileNodes.getLength(); z++) {
+										if (!profileNodes.item(z).getNodeName().equals("#text")) {
+											properties.add(">" + profileNodes.item(z).getNodeName() + "=" + profileNodes.item(z).getTextContent().trim());
+											if (profileNodes.item(z).getNodeName().equals("skipTests")) {
+												skipTest = Boolean.parseBoolean(profileNodes.item(z).getTextContent().trim());
+											}
 										}
 									}
 								}
 							}
+							log(actionName + "=" + goals + ", " + profiles + ", " + skipTest);
+							for (String pp : properties) {
+								log("   " + pp);
+							}
+							log("--------");
+							MyTreeNode goalNode = new MyTreeNode(actionName, goals, profiles, properties, skipTest, "default goal", node.project, node.projectInformation);
+							if ((searchString.equals("") || goalNode.name.toLowerCase().contains(searchString.toLowerCase())) && !goalNode.name.trim().equals("") && goalNode.type.equals("default goal")) {
+								node.add(goalNode);
+								goalNode.icon = (new javax.swing.ImageIcon(getClass().getResource("/com/peter/mavenrunner/star.png")));
+							}
 						}
-						log(actionName + "=" + goals + ", " + profiles + ", " + skipTest);
-						for (String pp : properties) {
-							log("   " + pp);
-						}
-						log("--------");
-						node.add(new MyTreeNode(actionName, goals, profiles, properties, skipTest, "goal", node.project, node.projectInformation));
-
 					}
 				}
 				// end load goals from nbactions.xml
@@ -630,7 +658,6 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					Vector<PersistData> persistData = data.get(key);
 					if (persistData != null) {
 						for (PersistData n : persistData) {
-							String searchString = searchTextField.getText().trim();
 							if ((searchString.equals("") || n.name.toLowerCase().contains(searchString.toLowerCase())) && !n.name.trim().equals("") && n.type.equals("goal")) {
 								node.add(new MyTreeNode(n.name, n.goals, n.profile, n.properties, n.skipTests, n.type, node.project, node.projectInformation));
 							}
