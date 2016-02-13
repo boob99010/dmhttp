@@ -26,6 +26,7 @@ import javax.swing.tree.TreePath;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang.StringUtils;
@@ -45,6 +46,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.w3c.dom.NodeList;
 
 /**
  * Top component which displays something.
@@ -72,7 +74,7 @@ import org.openide.windows.InputOutput;
 })
 public final class MavenRunnerTopComponent extends TopComponent {
 
-	static boolean isDebug = true;
+	static boolean isDebug = false;
 	MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
 
 	Hashtable<String, Vector<PersistData>> data = new Hashtable<String, Vector<PersistData>>();
@@ -553,17 +555,64 @@ public final class MavenRunnerTopComponent extends TopComponent {
 				node.icon = projectInformation.getIcon();
 
 				// load goals from nbactions.xml
-				File ab = new File(p.getProjectDirectory().getPath() + File.separator + "nbactions.xml");
-				log("ab=" + ab.exists());
+				if (new File(p.getProjectDirectory().getPath() + File.separator + "nbactions.xml").exists()) {
+					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder builder = factory.newDocumentBuilder();
+					Document doc = builder.parse(p.getProjectDirectory().getPath() + File.separator + "nbactions.xml");
+					XPathFactory xPathfactory = XPathFactory.newInstance();
+					XPath xpath = xPathfactory.newXPath();
+					XPathExpression expr = xpath.compile("//action");
+					NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+					for (int x = 0; x < nl.getLength(); x++) {
+						NodeList childs = nl.item(x).getChildNodes();
+						String actionName = "";
+						String goals = "";
+						String profiles = "";
+						List<String> properties = new ArrayList<String>();
+						boolean skipTest = false;
 
-				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder builder = factory.newDocumentBuilder();
-				Document doc = builder.parse("sd");
-				XPathFactory xPathfactory = XPathFactory.newInstance();
-				XPath xpath = xPathfactory.newXPath();
-				XPathExpression expr = xpath.compile("sd");
+						for (int y = 0; y < childs.getLength(); y++) {
+							//log(childs.item(y).getNodeName());
+							if (childs.item(y).getNodeName().equals("actionName")) {
+								actionName = childs.item(y).getTextContent();
+							} else if (childs.item(y).getNodeName().equals("goals")) {
+								NodeList goalNodes = childs.item(y).getChildNodes();
+								for (int z = 0; z < goalNodes.getLength(); z++) {
+									if (goalNodes.item(z).getNodeName().equals("goal")) {
+										goals += goalNodes.item(z).getTextContent() + " ";
+									}
+								}
+							} else if (childs.item(y).getNodeName().equals("activatedProfiles")) {
+								NodeList profileNodes = childs.item(y).getChildNodes();
+								for (int z = 0; z < profileNodes.getLength(); z++) {
+									if (profileNodes.item(z).getNodeName().equals("activatedProfile")) {
+										profiles += profileNodes.item(z).getTextContent() + " ";
+									}
+								}
+							} else if (childs.item(y).getNodeName().equals("properties")) {
+								NodeList profileNodes = childs.item(y).getChildNodes();
+								log("length=" + profileNodes.getLength());
+								for (int z = 0; z < profileNodes.getLength(); z++) {
+									if (!profileNodes.item(z).getNodeName().equals("#text")) {
+										properties.add(">" + profileNodes.item(z).getNodeName() + "=" + profileNodes.item(z).getTextContent().trim());
+										if (profileNodes.item(z).getNodeName().equals("skipTests")) {
+											skipTest = Boolean.parseBoolean(profileNodes.item(z).getTextContent().trim());
+										}
+									}
+								}
+							}
+						}
+						log(actionName + "=" + goals + ", " + profiles + ", " + skipTest);
+						for (String pp : properties) {
+							log("   " + pp);
+						}
+						log("--------");
+						node.add(new MyTreeNode(actionName, goals, profiles, properties, skipTest, "goal", node.project, node.projectInformation));
 
+					}
+				}
 				// end load goals from nbactions.xml
+
 				// load goals
 				try {
 					String key = node.projectInformation.getDisplayName();
