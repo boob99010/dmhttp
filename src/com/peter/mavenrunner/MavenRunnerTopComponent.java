@@ -35,6 +35,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileUtil;
@@ -43,6 +45,7 @@ import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.w3c.dom.NodeList;
@@ -71,11 +74,23 @@ import org.w3c.dom.NodeList;
 	"CTL_MavenRunnerTopComponent=Maven runner",
 	"HINT_MavenRunnerTopComponent=This is Maven runner"
 })
-public final class MavenRunnerTopComponent extends TopComponent {
-	static boolean isDebug = false;
-	MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
+@LookupProvider.Registration(projectType = {
+	"org-netbeans-modules-ant-freeform",
+	"org-netbeans-modules-j2ee-archiveproject",
+	"org-netbeans-modules-j2ee-clientproject",
+	"org-netbeans-modules-j2ee-earproject",
+	"org-netbeans-modules-j2ee-ejbjarproject",
+	"org-netbeans-modules-java-j2seproject",
+	"org-netbeans-modules-maven",
+	"org-netbeans-modules-web-clientproject",
+	"org-netbeans-modules-web-project"
+})
+public final class MavenRunnerTopComponent extends TopComponent implements LookupProvider {
 
-	Hashtable<String, ArrayList<PersistData>> data = new Hashtable<String, ArrayList<PersistData>>();
+	static boolean isDebug = true;
+	static MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
+
+	static Hashtable<String, ArrayList<PersistData>> data = new Hashtable<String, ArrayList<PersistData>>();
 
 	public MavenRunnerTopComponent() {
 		initComponents();
@@ -274,9 +289,11 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		} else if (evt.getClickCount() == 2) {
 			if (projectTree.getSelectionPath() != null) {
 				MyTreeNode node = (MyTreeNode) projectTree.getSelectionPath().getLastPathComponent();
+
 				if (node.type.equals("goal") || node.type.equals("default goal")) {
 					try {
-						ClassLoader syscl = Lookup.getDefault().lookup(ClassLoader.class);
+						ClassLoader syscl = Lookup.getDefault().lookup(ClassLoader.class
+						);
 						List<String> goals = new ArrayList<String>();
 						//goals.add("-Dmaven.tomcat.port=8082");
 						String goalsStr[] = node.goals.split(" ");
@@ -285,13 +302,15 @@ public final class MavenRunnerTopComponent extends TopComponent {
 						}
 
 						Class runUtils = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunUtils");
-						Method createRunConfig = runUtils.getMethod("createRunConfig", new Class[]{File.class, Project.class, String.class, List.class});
+						Method createRunConfig = runUtils.getMethod("createRunConfig", new Class[]{File.class, Project.class, String.class, List.class
+						});
 						Object rc = createRunConfig.invoke(null, FileUtil.toFile(node.project.getProjectDirectory()), node.project, node.projectInformation.getDisplayName(), goals);
 
 						Class runConfig = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunConfig");
 
 						// maven properties
-						Method setProperty = runConfig.getMethod("addProperties", new Class[]{Map.class});
+						Method setProperty = runConfig.getMethod("addProperties", new Class[]{Map.class
+						});
 						Map<String, String> properties = new HashMap<String, String>();
 						for (String property : node.properties) {
 							String s[] = property.split("=");
@@ -306,7 +325,8 @@ public final class MavenRunnerTopComponent extends TopComponent {
 
 						// maven profile
 						if (!node.profile.trim().equals("")) {
-							Method setActivatedProfiles = runConfig.getMethod("setActivatedProfiles", new Class[]{java.util.List.class});
+							Method setActivatedProfiles = runConfig.getMethod("setActivatedProfiles", new Class[]{java.util.List.class
+							});
 							List<String> profiles = new ArrayList<String>();
 							profiles.add(node.profile);
 							setActivatedProfiles.invoke(rc, profiles);
@@ -498,19 +518,20 @@ public final class MavenRunnerTopComponent extends TopComponent {
     }//GEN-LAST:event_fontSizeDecreaseButtonActionPerformed
 
     private void debugButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugButtonActionPerformed
-		try {
-			ClassLoader syscl = Lookup.getDefault().lookup(ClassLoader.class);
-			Class runUtils = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunUtils");
-			Class runConfig = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunConfig");
-			Method[] m = runConfig.getDeclaredMethods();
-			for (int i = 0;
-					i < m.length;
-					i++) {
-				log(m[i].toString());
-			}
-		} catch (ClassNotFoundException ex) {
-			Exceptions.printStackTrace(ex);
-		}
+		projectTree.updateUI();
+		log(String.valueOf(root.getChildCount()));
+//		try {
+//			ClassLoader syscl = Lookup.getDefault().lookup(ClassLoader.class
+//			);
+//			Class runUtils = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunUtils");
+//			Class runConfig = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunConfig");
+//			Method[] m = runConfig.getDeclaredMethods();
+//			for (int i = 0; i < m.length; i++) {
+//				log(m[i].toString());
+//			}
+//		} catch (ClassNotFoundException ex) {
+//			Exceptions.printStackTrace(ex);
+//		}
     }//GEN-LAST:event_debugButtonActionPerformed
 
     private void hideDefaultGoalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideDefaultGoalButtonActionPerformed
@@ -565,11 +586,13 @@ public final class MavenRunnerTopComponent extends TopComponent {
 	void refreshTree(boolean showEmptyNode) {
 		log("refreshTree");
 		root.removeAllChildren();
-
+		((DefaultTreeModel) projectTree.getModel()).nodeStructureChanged(root);
 		try {
 			String searchString = searchTextField.getText().trim();
+
 			for (Project p : OpenProjects.getDefault().getOpenProjects()) {
 				ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
+				log(projectInformation.getDisplayName());
 				if (!new File(p.getProjectDirectory().getPath() + File.separator + "pom.xml").exists()) {
 					continue;
 				}
@@ -596,7 +619,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 							boolean skipTest = false;
 
 							for (int y = 0; y < childs.getLength(); y++) {
-								log(childs.item(y).getNodeName());
+								//log(childs.item(y).getNodeName());
 								if (childs.item(y).getNodeName().equals("displayName")) {
 									displayName = childs.item(y).getTextContent();
 								} else if (childs.item(y).getNodeName().equals("actionName")) {
@@ -617,7 +640,6 @@ public final class MavenRunnerTopComponent extends TopComponent {
 									}
 								} else if (childs.item(y).getNodeName().equals("properties")) {
 									NodeList profileNodes = childs.item(y).getChildNodes();
-									log("length=" + profileNodes.getLength());
 									for (int z = 0; z < profileNodes.getLength(); z++) {
 										if (!profileNodes.item(z).getNodeName().equals("#text")) {
 											properties.add(">" + profileNodes.item(z).getNodeName() + "=" + profileNodes.item(z).getTextContent().trim());
@@ -628,11 +650,11 @@ public final class MavenRunnerTopComponent extends TopComponent {
 									}
 								}
 							}
-							log(displayName == null ? actionName : displayName + "=" + goals + ", " + profiles + ", " + skipTest);
-							for (String pp : properties) {
-								log("   " + pp);
-							}
-							log("--------");
+//							log(displayName == null ? actionName : displayName + "=" + goals + ", " + profiles + ", " + skipTest);
+//							for (String pp : properties) {
+//								log("   " + pp);
+//							}
+//							log("--------");
 							MyTreeNode goalNode = new MyTreeNode(displayName == null ? actionName : displayName, goals, profiles, properties, skipTest, "default goal", node.project, node.projectInformation);
 							if ((searchString.equals("") || goalNode.name.toLowerCase().contains(searchString.toLowerCase())) && !goalNode.name.trim().equals("") && goalNode.type.equals("default goal")) {
 								node.add(goalNode);
@@ -651,11 +673,11 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					data = fromString(value);
 					if (data == null) {
 						data = new Hashtable< String, ArrayList<PersistData>>();
-						log("create new data");
+						log("  create new data");
 					}
 					if (data.get(key) == null) {
 						data.put(key, new ArrayList<PersistData>());
-						log("add " + key + " to data");
+						log("  add " + key + " to data");
 					}
 					ArrayList<PersistData> persistData = data.get(key);
 					if (persistData != null) {
@@ -675,13 +697,17 @@ public final class MavenRunnerTopComponent extends TopComponent {
 
 				if (showEmptyNode) {
 					root.add(node);
-				} else if (node.getChildCount() > 0) {
+				}/* else if (node.getChildCount() > 0) {
 					root.add(node);
-				}
+				}*/
 			}
 		} catch (Exception ex) {
 			log(ExceptionUtils.getStackTrace(ex));
 		}
+		
+		((DefaultTreeModel) projectTree.getModel()).nodeStructureChanged(root);
+		//((DefaultTreeModel) projectTree.getModel()).reload();
+		//projectTree.repaint();
 		projectTree.updateUI();
 		expandAll(projectTree, true);
 	}
@@ -747,6 +773,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 			io.getOut().println(str);
 		}
 	}
+
 	/*
 	 @Override
 	 public void writeExternal(ObjectOutput oo) throws IOException {
@@ -767,4 +794,21 @@ public final class MavenRunnerTopComponent extends TopComponent {
 	 }
 
 	 */
+	@Override
+	public Lookup createAdditionalLookup(Lookup lookup) {
+		Project p = lookup.lookup(Project.class);
+		final String name = p.getProjectDirectory().getName();
+
+		return Lookups.fixed(new ProjectOpenedHook() {
+			@Override
+			protected void projectOpened() {
+				refreshTree(!hideEmptyProjectToggleButton.isSelected());
+			}
+
+			@Override
+			protected void projectClosed() {
+				refreshTree(!hideEmptyProjectToggleButton.isSelected());
+			}
+		});
+	}
 }
