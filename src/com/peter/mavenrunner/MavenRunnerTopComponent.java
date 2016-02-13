@@ -17,7 +17,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
@@ -73,11 +72,10 @@ import org.w3c.dom.NodeList;
 	"HINT_MavenRunnerTopComponent=This is Maven runner"
 })
 public final class MavenRunnerTopComponent extends TopComponent {
-
 	static boolean isDebug = false;
 	MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
 
-	Hashtable<String, Vector<PersistData>> data = new Hashtable<String, Vector<PersistData>>();
+	Hashtable<String, ArrayList<PersistData>> data = new Hashtable<String, ArrayList<PersistData>>();
 
 	public MavenRunnerTopComponent() {
 		initComponents();
@@ -358,9 +356,9 @@ public final class MavenRunnerTopComponent extends TopComponent {
 				projectTree.updateUI();
 
 				String key = node.projectInformation.getDisplayName();
-				Vector<PersistData> list = data.get(key);
+				ArrayList<PersistData> list = data.get(key);
 				if (list == null) {
-					list = new Vector<PersistData>();
+					list = new ArrayList<PersistData>();
 					data.put(key, list);
 				}
 				list.add(new PersistData(goalNode.type, goalNode.projectInformation.getDisplayName(), goalNode.name, goalNode.goals, goalNode.profile, goalNode.properties, goalNode.skipTests));
@@ -394,9 +392,9 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					return;
 				}
 				String key = node.projectInformation.getDisplayName();
-				Vector<PersistData> list = data.get(key);
+				ArrayList<PersistData> list = data.get(key);
 				if (list == null) {
-					list = new Vector<PersistData>();
+					list = new ArrayList<PersistData>();
 					data.put(key, list);
 				}
 
@@ -443,16 +441,16 @@ public final class MavenRunnerTopComponent extends TopComponent {
 			projectTree.updateUI();
 
 			String key = node.projectInformation.getDisplayName();
-			Vector<PersistData> list = data.get(key);
+			ArrayList<PersistData> list = data.get(key);
 			if (list == null) {
-				list = new Vector<PersistData>();
+				list = new ArrayList<PersistData>();
 				data.put(key, list);
 			}
 			log("before delete " + list.size() + ", key=" + key);
 			try {
-				Enumeration i = list.elements();
-				while (i.hasMoreElements()) {
-					PersistData p = (PersistData) i.nextElement();
+				Iterator i = list.iterator();
+				while (i.hasNext()) {
+					PersistData p = (PersistData) i.next();
 					if (p.name.equals(node.name)) {
 						list.remove(p);
 					}
@@ -565,6 +563,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 	}
 
 	void refreshTree(boolean showEmptyNode) {
+		log("refreshTree");
 		root.removeAllChildren();
 
 		try {
@@ -589,15 +588,18 @@ public final class MavenRunnerTopComponent extends TopComponent {
 						NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
 						for (int x = 0; x < nl.getLength(); x++) {
 							NodeList childs = nl.item(x).getChildNodes();
-							String actionName = "";
+							String displayName = null;
+							String actionName = null;
 							String goals = "";
 							String profiles = "";
 							List<String> properties = new ArrayList<String>();
 							boolean skipTest = false;
 
 							for (int y = 0; y < childs.getLength(); y++) {
-								//log(childs.item(y).getNodeName());
-								if (childs.item(y).getNodeName().equals("actionName")) {
+								log(childs.item(y).getNodeName());
+								if (childs.item(y).getNodeName().equals("displayName")) {
+									displayName = childs.item(y).getTextContent();
+								} else if (childs.item(y).getNodeName().equals("actionName")) {
 									actionName = childs.item(y).getTextContent();
 								} else if (childs.item(y).getNodeName().equals("goals")) {
 									NodeList goalNodes = childs.item(y).getChildNodes();
@@ -626,12 +628,12 @@ public final class MavenRunnerTopComponent extends TopComponent {
 									}
 								}
 							}
-							log(actionName + "=" + goals + ", " + profiles + ", " + skipTest);
+							log(displayName == null ? actionName : displayName + "=" + goals + ", " + profiles + ", " + skipTest);
 							for (String pp : properties) {
 								log("   " + pp);
 							}
 							log("--------");
-							MyTreeNode goalNode = new MyTreeNode(actionName, goals, profiles, properties, skipTest, "default goal", node.project, node.projectInformation);
+							MyTreeNode goalNode = new MyTreeNode(displayName == null ? actionName : displayName, goals, profiles, properties, skipTest, "default goal", node.project, node.projectInformation);
 							if ((searchString.equals("") || goalNode.name.toLowerCase().contains(searchString.toLowerCase())) && !goalNode.name.trim().equals("") && goalNode.type.equals("default goal")) {
 								node.add(goalNode);
 								goalNode.icon = (new javax.swing.ImageIcon(getClass().getResource("/com/peter/mavenrunner/star.png")));
@@ -648,14 +650,14 @@ public final class MavenRunnerTopComponent extends TopComponent {
 					//log("value=" + value);
 					data = fromString(value);
 					if (data == null) {
-						data = new Hashtable< String, Vector< PersistData>>();
+						data = new Hashtable< String, ArrayList<PersistData>>();
 						log("create new data");
 					}
 					if (data.get(key) == null) {
-						data.put(key, new Vector<PersistData>());
+						data.put(key, new ArrayList<PersistData>());
 						log("add " + key + " to data");
 					}
-					Vector<PersistData> persistData = data.get(key);
+					ArrayList<PersistData> persistData = data.get(key);
 					if (persistData != null) {
 						for (PersistData n : persistData) {
 							if ((searchString.equals("") || n.name.toLowerCase().contains(searchString.toLowerCase())) && !n.name.trim().equals("") && n.type.equals("goal")) {
@@ -666,7 +668,7 @@ public final class MavenRunnerTopComponent extends TopComponent {
 				} catch (Exception ex) {
 					log(ExceptionUtils.getStackTrace(ex));
 					// old version of data throws here
-					data = new Hashtable< String, Vector< PersistData>>();
+					data = new Hashtable< String, ArrayList<PersistData>>();
 					NbPreferences.forModule(this.getClass()).put("data", toString(data));
 				}
 				// load goals end
@@ -724,17 +726,17 @@ public final class MavenRunnerTopComponent extends TopComponent {
 		return TopComponent.PERSISTENCE_ALWAYS;
 	}
 
-	private Hashtable<String, Vector<PersistData>> fromString(String s) {
+	private Hashtable<String, ArrayList<PersistData>> fromString(String s) {
 		try {
 			XStream xstream = new XStream();
-			return (Hashtable<String, Vector<PersistData>>) xstream.fromXML(s);
+			return (Hashtable<String, ArrayList<PersistData>>) xstream.fromXML(s);
 		} catch (Exception ex) {
 			log(ExceptionUtils.getStackTrace(ex));
 			return null;
 		}
 	}
 
-	private String toString(Hashtable<String, Vector<PersistData>> o) {
+	private String toString(Hashtable<String, ArrayList<PersistData>> o) {
 		XStream xstream = new XStream();
 		return xstream.toXML(o);
 	}
