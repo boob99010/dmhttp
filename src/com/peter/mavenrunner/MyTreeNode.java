@@ -38,4 +38,8 @@ public class MyTreeNode extends DefaultMutableTreeNode {
 		this.projectInformation = projectInformation;
 	}
 
+	public String toString() {
+		return name + " - " + goals;
+	}
+
 }
