@@ -14,7 +14,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package com.peter.mavenrunner;
 
 import java.awt.Component;
@@ -22,7 +22,6 @@ import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.api.project.ProjectInformation;
 
@@ -34,7 +33,12 @@ public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 
 	public MyTreeNodeRenderer() {
 		setBorder(new EmptyBorder(4, 4, 4, 4));
-		setOpaque(true);
+
+		if (UIManager.getColor("nimbusBackground") != null) {
+			setOpaque(true);
+		} else {
+			setOpaque(false);
+		}
 	}
 
 	@Override
@@ -55,6 +59,7 @@ public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 			}
 			setForeground(UIManager.getColor("Tree.selectionForeground"));
 		} else {
+
 			if (UIManager.getColor("nimbusBackground") != null) {
 				setBackground(UIManager.getColor("nimbusBackground"));
 			} else {
