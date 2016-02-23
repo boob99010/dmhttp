@@ -188,6 +188,11 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
         });
         treePopupMenu.add(refreshMenuItem);
 
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                formComponentShown(evt);
+            }
+        });
         setLayout(new java.awt.BorderLayout());
 
         treePanel.setLayout(new java.awt.BorderLayout());
@@ -574,6 +579,10 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
     private void runMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runMenuItemActionPerformed
 		runGoal();
     }//GEN-LAST:event_runMenuItemActionPerformed
+
+    private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+		projectTree.requestFocus();
+    }//GEN-LAST:event_formComponentShown
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem addGoalMenuItem;
