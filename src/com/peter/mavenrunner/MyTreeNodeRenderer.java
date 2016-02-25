@@ -20,29 +20,30 @@ package com.peter.mavenrunner;
 import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.JTree;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import org.netbeans.api.project.ProjectInformation;
 
 /**
  *
  * @author peter
  */
-public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
+public class MyTreeNodeRenderer extends DefaultTreeCellRenderer {
 
 	public MyTreeNodeRenderer() {
 		setBorder(new EmptyBorder(4, 4, 4, 4));
 
-		if (UIManager.getColor("nimbusBackground") != null) {
-			setOpaque(true);
-		} else {
-			setOpaque(false);
-		}
+//		if (UIManager.getColor("nimbusBackground") != null) {
+//			setOpaque(true);
+//		} else {
+//			setOpaque(false);
+//		}
+		MavenRunnerTopComponent.log("人=" + this.isOpaque());
 	}
 
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+		super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 		MyTreeNode treeNode = (MyTreeNode) value;
 		if (treeNode.type != null && treeNode.type.equals("project")) {
 			ProjectInformation pi = treeNode.projectInformation;
@@ -51,31 +52,25 @@ public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 			setText(treeNode.name);
 		}
 		setIcon(treeNode.icon);
-		if (selected) {
-			if (UIManager.getColor("nimbusSelectionBackground") != null) {
-				setBackground(UIManager.getColor("nimbusSelectionBackground"));
-			} else {
-				setBackground(UIManager.getColor("Tree.selectionBackground"));
-			}
-			setForeground(UIManager.getColor("Tree.selectionForeground"));
-		} else {
-
-			if (UIManager.getColor("nimbusBackground") != null) {
-				setBackground(UIManager.getColor("nimbusBackground"));
-			} else {
-				setBackground(UIManager.getColor("Tree.background"));
-			}
-			setForeground(UIManager.getColor("Tree.foreground"));
-		}
-		//MavenRunnerTopComponent.log(UIManager.getColor("Tree.background").toString());
-
 //		if (selected) {
-//			setBackground(new Color(9, 80, 208));
-//			setForeground(Color.white);
+//			if (UIManager.getColor("nimbusSelectionBackground") != null) {
+//				setBackground(UIManager.getColor("nimbusSelectionBackground"));
+//			} else {
+//				setBackground(UIManager.getColor("Tree.selectionBackground"));
+//			}
+//			setForeground(UIManager.getColor("Tree.selectionForeground"));
+//			MavenRunnerTopComponent.log("selected=" + UIManager.getColor("Tree.selectionForeground"));
 //		} else {
-//			setBackground(Color.white);
-//			setForeground(Color.black);
+//
+//			if (UIManager.getColor("nimbusBackground") != null) {
+//				setBackground(UIManager.getColor("nimbusBackground"));
+//			} else {
+//				setBackground(UIManager.getColor("Tree.background"));
+//			}
+//			setForeground(UIManager.getColor("Tree.foreground"));
+//			MavenRunnerTopComponent.log("normal=" + UIManager.getColor("Tree.foreground"));
 //		}
+
 		return this;
 	}
 }

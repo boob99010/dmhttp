@@ -752,15 +752,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 		}
 
 		treeModel.nodeStructureChanged(root);
-		log(" ---------- tempRoot 0 = " + root.getChildCount() + " , " + root);
-		//((DefaultTreeModel) projectTree.getModel()).reload(root);
-		//((DefaultTreeModel) projectTree.getModel()).reload();
-		//projectTree.repaint();
-		//projectTree.setVisible(false);
-		//projectTree.setVisible(true);
-		log(" ---------- tempRoot 1 = " + root.getChildCount() + " , " + root);
 		expandAll(projectTree, true);
-		log(" ---------- tempRoot 3 = " + root.getChildCount() + " , " + root);
 	}
 
 	public void expandAll(JTree tree, boolean expand) {
@@ -768,15 +760,12 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 	}
 
 	public void expandAll(JTree tree, boolean expand, int maxLevel) {
-		log(" fuck 1 = " + tree.getModel());
-		log(" fuck 2 = " + treeModel.getRoot().getClass());
-		log(" fuck 3 = " + String.valueOf(root.getChildCount()));
 		MyTreeNode tempRoot = (MyTreeNode) treeModel.getRoot();
 		if (tempRoot != null) {
-			log(" ---------- tempRoot 2 = " + tempRoot.getChildCount() + " , " + tempRoot);
-			for (int x = 0; x < tempRoot.getChildCount(); x++) {
-				log("                --------> " + x + " = " + tempRoot.getChildAt(x));
-			}
+//			log(" ---------- tempRoot 2 = " + tempRoot.getChildCount() + " , " + tempRoot);
+//			for (int x = 0; x < tempRoot.getChildCount(); x++) {
+//				log("                --------> " + x + " = " + tempRoot.getChildAt(x));
+//			}
 			expandAll(tree, new TreePath(tempRoot), expand, maxLevel, 0);
 			tree.expandPath(new TreePath(tempRoot));
 		}
@@ -789,8 +778,8 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 
 		TreeNode node = (TreeNode) treePath.getLastPathComponent();
 		if (node.getChildCount() >= 0) {
-			for (Enumeration e = node.children(); e.hasMoreElements();) {
-				TreeNode n = (TreeNode) e.nextElement();
+			for (Enumeration<TreeNode> e = node.children(); e.hasMoreElements();) {
+				TreeNode n = e.nextElement();
 
 				TreePath path = treePath.pathByAddingChild(n);
 				expandAll(tree, path, expand, maxLevel, currentLevel + 1);
@@ -832,30 +821,10 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 		}
 	}
 
-	/*
-	 @Override
-	 public void writeExternal(ObjectOutput oo) throws IOException {
-	 super.writeExternal(oo);
-	 InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
-	 io.getOut().println("----- writeExternal");
-	 Object toWrite = new NbMarshalledObject(data);
-	 oo.writeObject(toWrite);
-	 }
-
-	 @Override
-	 public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
-	 super.readExternal(oi);
-	 InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
-	 io.getOut().println("----- readExternal");
-	 NbMarshalledObject obj = (NbMarshalledObject) oi.readObject();
-	 data = (Hashtable<String, Vector<String>>) obj.get();
-	 }
-
-	 */
 	@Override
 	public Lookup createAdditionalLookup(Lookup lookup) {
 		Project p = lookup.lookup(Project.class);
-		final String name = p.getProjectDirectory().getName();
+		//final String name = p.getProjectDirectory().getName();
 
 		return Lookups.fixed(new ProjectOpenedHook() {
 			@Override
