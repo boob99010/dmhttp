@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package com.peter.mavenrunner;
 
 import java.awt.Component;
-import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -32,8 +31,6 @@ public class MyTreeNodeRenderer extends DefaultTreeCellRenderer {
 
 	public MyTreeNodeRenderer() {
 		setBorder(new EmptyBorder(4, 4, 4, 4));
-
-		MavenRunnerTopComponent.log("人=" + this.isOpaque());
 	}
 
 	@Override
