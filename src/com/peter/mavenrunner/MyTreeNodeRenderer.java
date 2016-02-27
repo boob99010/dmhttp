@@ -33,11 +33,6 @@ public class MyTreeNodeRenderer extends DefaultTreeCellRenderer {
 	public MyTreeNodeRenderer() {
 		setBorder(new EmptyBorder(4, 4, 4, 4));
 
-//		if (UIManager.getColor("nimbusBackground") != null) {
-//			setOpaque(true);
-//		} else {
-//			setOpaque(false);
-//		}
 		MavenRunnerTopComponent.log("人=" + this.isOpaque());
 	}
 
@@ -52,25 +47,6 @@ public class MyTreeNodeRenderer extends DefaultTreeCellRenderer {
 			setText(treeNode.name);
 		}
 		setIcon(treeNode.icon);
-//		if (selected) {
-//			if (UIManager.getColor("nimbusSelectionBackground") != null) {
-//				setBackground(UIManager.getColor("nimbusSelectionBackground"));
-//			} else {
-//				setBackground(UIManager.getColor("Tree.selectionBackground"));
-//			}
-//			setForeground(UIManager.getColor("Tree.selectionForeground"));
-//			MavenRunnerTopComponent.log("selected=" + UIManager.getColor("Tree.selectionForeground"));
-//		} else {
-//
-//			if (UIManager.getColor("nimbusBackground") != null) {
-//				setBackground(UIManager.getColor("nimbusBackground"));
-//			} else {
-//				setBackground(UIManager.getColor("Tree.background"));
-//			}
-//			setForeground(UIManager.getColor("Tree.foreground"));
-//			MavenRunnerTopComponent.log("normal=" + UIManager.getColor("Tree.foreground"));
-//		}
-
 		return this;
 	}
 }
