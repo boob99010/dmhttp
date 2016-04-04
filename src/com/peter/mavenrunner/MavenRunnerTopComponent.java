@@ -29,6 +29,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
@@ -379,6 +380,8 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 				}
 //					}
 			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Please select a goal in tree", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
