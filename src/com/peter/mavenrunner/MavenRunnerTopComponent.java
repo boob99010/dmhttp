@@ -379,7 +379,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 					ex.printStackTrace();
 				}
 			} else {
-				JOptionPane.showMessageDialog(this, "Wrong tree node type, it is not a maven goal", "Error", JOptionPane.ERROR_MESSAGE);
+				//JOptionPane.showMessageDialog(this, "Wrong tree node type, it is not a maven goal", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		} else {
 			JOptionPane.showMessageDialog(this, "Please select a goal in tree", "Error", JOptionPane.ERROR_MESSAGE);
