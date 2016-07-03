@@ -99,12 +99,12 @@ import org.w3c.dom.NodeList;
 })
 
 public final class MavenRunnerTopComponent extends TopComponent implements LookupProvider {
-
+	
 	static boolean isDebug = false;
 	static MyTreeNode root = new MyTreeNode(null, null, null, null, false, "Projects", null, null);
 	static DefaultTreeModel treeModel = new DefaultTreeModel(root);
 	static Hashtable<String, ArrayList<PersistData>> data = new Hashtable<String, ArrayList<PersistData>>();
-
+	
 	public MavenRunnerTopComponent() {
 		initComponents();
 		setName(Bundle.CTL_MavenRunnerTopComponent());
@@ -303,19 +303,19 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 					addGoalMenuItem.setEnabled(true);
 					editGoalMenuItem.setEnabled(false);
 					deleteGoalMenuItem.setEnabled(false);
-
+					
 					runMenuItem.setEnabled(false);
 				} else if (node.type.equals("goal")) {
 					addGoalMenuItem.setEnabled(false);
 					editGoalMenuItem.setEnabled(true);
 					deleteGoalMenuItem.setEnabled(true);
-
+					
 					runMenuItem.setEnabled(true);
 				} else if (node.type.equals("default goal")) {
 					addGoalMenuItem.setEnabled(false);
 					editGoalMenuItem.setEnabled(false);
 					deleteGoalMenuItem.setEnabled(false);
-
+					
 					runMenuItem.setEnabled(true);
 				}
 			}
@@ -324,11 +324,11 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 			runGoal();
 		}
     }//GEN-LAST:event_projectTreeMouseClicked
-
+	
 	private void runGoal() {
 		if (projectTree.getSelectionPath() != null) {
 			MyTreeNode node = (MyTreeNode) projectTree.getSelectionPath().getLastPathComponent();
-
+			
 			log("node.type=" + node.type);
 			if (node.type.equals("goal") || node.type.equals("default goal")) {
 				try {
@@ -340,12 +340,12 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 					for (String goal : goalsStr) {
 						goals.add(goal);
 					}
-
+					
 					Class runUtils = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunUtils");
 					Method createRunConfig = runUtils.getMethod("createRunConfig", new Class[]{File.class, Project.class, String.class, List.class
 					});
 					Object rc = createRunConfig.invoke(null, FileUtil.toFile(node.project.getProjectDirectory()), node.project, node.projectInformation.getDisplayName(), goals);
-
+					
 					Class runConfig = syscl.loadClass("org.netbeans.modules.maven.api.execute.RunConfig");
 
 					// maven properties
@@ -371,7 +371,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 						profiles.add(node.profile);
 						setActivatedProfiles.invoke(rc, profiles);
 					}
-
+					
 					Method executeMaven = runUtils.getMethod("executeMaven", new Class[]{runConfig});
 					executeMaven.invoke(null, rc);
 				} catch (Exception ex) {
@@ -395,7 +395,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 		if (path == null) {
 			return;
 		}
-
+		
 		MavenGoalDialog dialog = new MavenGoalDialog(null, true);
 		dialog.setTitle("Add goals");
 		dialog.setLocationRelativeTo(addGoalMenuItem);
@@ -411,12 +411,12 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 				String profile = dialog.profileTextField.getText();
 				List<String> properties = Arrays.asList(dialog.propertiesTextArea.getText().split("\n"));
 				boolean skipTests = dialog.skipTestsCheckBox.isSelected();
-
+				
 				MyTreeNode node = (MyTreeNode) ((MyTreeNode) path.getLastPathComponent());
 				MyTreeNode goalNode = new MyTreeNode(name, goals, profile, properties, skipTests, "goal", node.project, node.projectInformation);
 				node.add(goalNode);
 				projectTree.updateUI();
-
+				
 				String key = node.projectInformation.getDisplayName();
 				ArrayList<PersistData> list = data.get(key);
 				if (list == null) {
@@ -447,7 +447,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 			dialog.propertiesTextArea.setText(StringUtils.join(node.properties, "\n"));
 			dialog.skipTestsCheckBox.setSelected(node.skipTests);
 			dialog.setVisible(true);
-
+			
 			if (!dialog.isCancel) {
 				String name = dialog.nameTextField.getText();
 				if (name.trim().equals("")) {
@@ -459,7 +459,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 					list = new ArrayList<PersistData>();
 					data.put(key, list);
 				}
-
+				
 				int index = 0;
 				Iterator<PersistData> i = list.iterator();
 				while (i.hasNext()) {
@@ -469,22 +469,22 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 					}
 					index++;
 				}
-
+				
 				String goals = dialog.goalsTextField.getText();
 				String profile = dialog.profileTextField.getText();
 				List<String> properties = Arrays.asList(dialog.propertiesTextArea.getText().split("\n"));
 				boolean skipTests = dialog.skipTestsCheckBox.isSelected();
-
+				
 				log("index=" + index);
 				list.remove(index);
 				list.add(index, new PersistData(node.type, node.projectInformation.getDisplayName(), name, goals, profile, properties, skipTests));
-
+				
 				node.name = name;
 				node.goals = goals;
 				node.profile = profile;
 				node.properties = properties;
 				node.skipTests = skipTests;
-
+				
 				projectTree.updateUI();
 				NbPreferences.forModule(this.getClass()).put("data", toString(data));
 			}
@@ -501,7 +501,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 			MyTreeNode parentNode = (MyTreeNode) node.getParent();
 			parentNode.remove(node);
 			projectTree.updateUI();
-
+			
 			String key = node.projectInformation.getDisplayName();
 			ArrayList<PersistData> list = data.get(key);
 			if (list == null) {
@@ -618,30 +618,30 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 		projectTree.setRootVisible(false);
 		MyTreeNodeRenderer renderer = new MyTreeNodeRenderer();
 		projectTree.setCellRenderer(renderer);
-
+		
 		Font oldFont = renderer.getFont();
 		Font font = new Font(oldFont.getFontName(), oldFont.getStyle(), NbPreferences.forModule(this.getClass()).getInt("font", 12));
 		renderer.setFont(font);
 		refreshTree(true);
 	}
-
+	
 	@Override
 	public void componentClosed() {
 	}
-
+	
 	void writeProperties(java.util.Properties p) {
 	}
-
+	
 	void readProperties(java.util.Properties p) {
 	}
-
+	
 	void refreshTree(boolean showEmptyNode) {
 		log("refreshTree");
 		root.removeAllChildren();
-
+		
 		try {
 			String searchString = searchTextField.getText().trim();
-
+			
 			for (Project p : OpenProjects.getDefault().getOpenProjects()) {
 				ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
 				log(projectInformation.getDisplayName());
@@ -669,7 +669,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 							String profiles = "";
 							List<String> properties = new ArrayList<String>();
 							boolean skipTest = false;
-
+							
 							for (int y = 0; y < childs.getLength(); y++) {
 								//log(childs.item(y).getNodeName());
 								if (childs.item(y).getNodeName().equals("displayName")) {
@@ -754,15 +754,15 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 		} catch (Exception ex) {
 			log(ExceptionUtils.getStackTrace(ex));
 		}
-
+		
 		treeModel.nodeStructureChanged(root);
 		expandAll(projectTree, true);
 	}
-
+	
 	public void expandAll(JTree tree, boolean expand) {
 		expandAll(tree, expand, -1);
 	}
-
+	
 	public void expandAll(JTree tree, boolean expand, int maxLevel) {
 		MyTreeNode tempRoot = (MyTreeNode) treeModel.getRoot();
 		if (tempRoot != null) {
@@ -774,17 +774,17 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 			tree.expandPath(new TreePath(tempRoot));
 		}
 	}
-
+	
 	private static void expandAll(JTree tree, TreePath treePath, boolean expand, int maxLevel, int currentLevel) {
 		if (maxLevel != -1 && currentLevel >= maxLevel - 1) {
 			return;
 		}
-
+		
 		TreeNode node = (TreeNode) treePath.getLastPathComponent();
 		if (node.getChildCount() >= 0) {
 			for (Enumeration<TreeNode> e = node.children(); e.hasMoreElements();) {
 				TreeNode n = e.nextElement();
-
+				
 				TreePath path = treePath.pathByAddingChild(n);
 				expandAll(tree, path, expand, maxLevel, currentLevel + 1);
 			}
@@ -797,12 +797,12 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 			tree.collapsePath(treePath);
 		}
 	}
-
+	
 	@Override
 	public int getPersistenceType() {
 		return TopComponent.PERSISTENCE_ALWAYS;
 	}
-
+	
 	private Hashtable<String, ArrayList<PersistData>> fromString(String s) {
 		try {
 			XStream xstream = new XStream();
@@ -812,19 +812,19 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 			return null;
 		}
 	}
-
+	
 	private String toString(Hashtable<String, ArrayList<PersistData>> o) {
 		XStream xstream = new XStream();
 		return xstream.toXML(o);
 	}
-
+	
 	public static void log(String str) {
 		if (isDebug) {
 			InputOutput io = IOProvider.getDefault().getIO("MavenRunner", false);
 			io.getOut().println(str);
 		}
 	}
-
+	
 	@Override
 	public Lookup createAdditionalLookup(Lookup lookup) {
 		Project p = lookup.lookup(Project.class);
@@ -835,7 +835,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 			protected void projectOpened() {
 				refreshTree(!hideEmptyProjectToggleButton.isSelected());
 			}
-
+			
 			@Override
 			protected void projectClosed() {
 				refreshTree(!hideEmptyProjectToggleButton.isSelected());
