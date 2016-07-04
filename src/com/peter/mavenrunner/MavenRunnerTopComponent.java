@@ -107,6 +107,8 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 	
 	public MavenRunnerTopComponent() {
 		initComponents();
+		fontSizeIncreaseButton.setVisible(false);
+		fontSizeDecreaseButton.setVisible(false);
 		setName(Bundle.CTL_MavenRunnerTopComponent());
 		setToolTipText(Bundle.HINT_MavenRunnerTopComponent());
 		if (!isDebug) {
@@ -619,9 +621,9 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 		MyTreeNodeRenderer renderer = new MyTreeNodeRenderer();
 		projectTree.setCellRenderer(renderer);
 		
-		Font oldFont = renderer.getFont();
-		Font font = new Font(oldFont.getFontName(), oldFont.getStyle(), NbPreferences.forModule(this.getClass()).getInt("font", 12));
-		renderer.setFont(font);
+//		Font oldFont = renderer.getFont();
+//		Font font = new Font(oldFont.getFontName(), oldFont.getStyle(), NbPreferences.forModule(this.getClass()).getInt("font", 12));
+//		renderer.setFont(font);
 		refreshTree(true);
 	}
 	

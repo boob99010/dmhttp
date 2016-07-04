@@ -39,7 +39,6 @@ public class MyTreeNodeRenderer extends JLabel implements TreeCellRenderer {
 
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-		//super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 		MyTreeNode treeNode = (MyTreeNode) value;
 		if (treeNode.type != null && treeNode.type.equals("project")) {
 			ProjectInformation pi = treeNode.projectInformation;
