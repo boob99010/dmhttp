@@ -5,10 +5,6 @@
         <group name="Peter">
             <file>file:/Users/peter/NetBeansProjects/MavenRunner/src/com/peter/mavenrunner/MavenRunnerTopComponent.java</file>
         </group>
-        <group>
-            <file>file:/C:/NetBeansProjects/MavenRunner/nbproject/build-impl.xml</file>
-            <file>file:/C:/NetBeansProjects/MavenRunner/nbproject/private/platform-private.properties</file>
-            <file>file:/C:/NetBeansProjects/MavenRunner/nbproject/project.properties</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
