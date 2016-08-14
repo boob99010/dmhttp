@@ -203,6 +203,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 
         treePanel.setLayout(new java.awt.BorderLayout());
 
+        projectTree.setComponentPopupMenu(treePopupMenu);
         projectTree.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 projectTreeMouseClicked(evt);
@@ -306,8 +307,8 @@ public final class MavenRunnerTopComponent extends TopComponent implements Looku
 
     private void projectTreeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_projectTreeMouseClicked
 		if (SwingUtilities.isRightMouseButton(evt)) {
-			int row = projectTree.getClosestRowForLocation(evt.getX(), evt.getY());
-			projectTree.setSelectionRow(row);
+//			int row = projectTree.getClosestRowForLocation(evt.getX(), evt.getY());
+//			projectTree.setSelectionRow(row);
 			MyTreeNode node = (MyTreeNode) projectTree.getSelectionPath().getLastPathComponent();
 			if (!isDebug) {
 				if (node.type.equals("project")) {
